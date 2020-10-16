@@ -1,0 +1,33 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+module Main (main) where
+
+import qualified Data.Text as T
+import           Graphics.Blank
+import           Prelude.Compat
+
+imgPath :: FilePath
+imgPath = "/images/fan.jpg"
+
+main :: IO ()
+main = blankCanvas 3000 $ \ ctx -> do
+  url <- staticURL ctx "type/jpeg" imgPath
+  send ctx $ do
+     let (w, h) = (width ctx, height ctx)
+     console_log . T.pack . show $ (w, h)
+
+     fillStyle "black"
+     textAlign "center"
+     sequence_ [
+          do save()
+             translate (x * w/4,(y+1) * h/16)
+             let p' = round (p * 1/z) :: Int
+             font ("lighter " <> (T.pack $ show p') <> "pt " <> "Chalkduster") --  Calibri")
+             scale (z,z)
+             fillText("Hello World! (" <> (T.pack $ show p') <> ")", 0, 0)
+             restore()
+          | (x,p) <- [1..3] `zip` [9,18,36]
+          , (y,z) <- [1..3] `zip` [0.5,1,2]
+          ]
+     top' <- newImage url
+     drawImage(top', [0,0,w,h/2,0,h/2,w/2,h/4])
